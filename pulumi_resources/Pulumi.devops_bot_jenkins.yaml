@@ -1,0 +1,13 @@
+config:
+  general:project-name: devops-bot
+  general:owner: microservices@kenshoo.com
+  aws:account: lab
+  lambda:name: devops-bot-jenkins
+  lambda:type: api_gateway
+  lambda:role: pulumi-lambda-service-lambda-template
+  lambda:handler: devops-bot-jenkins-intent.lambda_function
+  lambda:runtime: python3.8
+  api:description: api to trigger devops-bot-jenkins lambda
+  api:path-suffix: test
+  api:hosted-zone: internalk-stg.com
+  api:domain-name: test-slackbot.internalk-stg.com

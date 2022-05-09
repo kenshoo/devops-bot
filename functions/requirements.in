@@ -1,0 +1,7 @@
+-c ../requirements-dev.in
+requests
+hvac==0.10.5
+jwt
+cryptography==3.4.8
+jira
+slack_sdk

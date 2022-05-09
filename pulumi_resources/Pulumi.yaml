@@ -1,0 +1,6 @@
+name: devops-bot
+runtime:
+  name: python
+  options:
+    virtualenv: ../venv
+description: Lambda creation via AWS Python

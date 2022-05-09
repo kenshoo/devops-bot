@@ -1,0 +1,5 @@
+-c functions/requirements.txt
+lambda-tasks-plugin
+pulumi-komponents.awslambda
+mock
+grpcio<=1.43.0
