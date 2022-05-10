@@ -7,14 +7,39 @@ logger.setLevel(logging.INFO)
 """ --- Helpers to build responses which match the structure of the necessary dialog actions --- """
 
 
-def get_slots(request, intent):
-    return filter(lambda i: i.name == intent, request['interpretations'])[0]['slots']
+# def get_slots(request, intent):
+#     return filter(lambda i: i.name == intent, request['interpretations'])[0]['slots']
+
+def get_slots(intent_request):
+    return intent_request['sessionState']['intent']['slots']
 
 
-def elicit_intent(session_attributes, message, response_card):
+def get_slot(intent_request, slot_name):
+    slots = get_slots(intent_request)
+    if slots is not None and slot_name in slots and slots[slot_name] is not None:
+        return slots[slot_name]['value']['interpretedValue']
+    else:
+        return None
+
+
+def get_session_attributes(intent_request):
+    session_state = intent_request['sessionState']
+    if 'sessionAttributes' in session_state:
+        return session_state['sessionAttributes']
+    return {}
+
+
+def get_session_active_contexts(intent_request):
+    session_state = intent_request['sessionState']
+    if 'activeContexts' in session_state:
+        return session_state['activeContexts']
+    return {}
+
+
+def elicit_intent(intent_request, message=None):
     return {
         'sessionState': {
-            'sessionAttributes': session_attributes
+            'sessionAttributes': get_session_attributes(intent_request),
             'dialogAction': {
                 'type': 'ElicitIntent',
             },
@@ -22,66 +47,77 @@ def elicit_intent(session_attributes, message, response_card):
         'messages': [{
             'contentType': 'PlainText',
             'content': message
-        }],
-        'responseCard': response_card
+        }] if message is not None else None,
+        'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
 
-def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message, response_card):
+def elicit_slot(intent_request, slot_to_elicit, message):
     return {
-        'sessionAttributes': session_attributes,
-        'dialogAction': {
-            'type': 'ElicitSlot',
-            'message': {
-                'contentType': 'PlainText',
-                'content': message
-            }
+        'sessionState': {
+            'activeContexts': get_session_active_contexts(intent_request),
+            'sessionAttributes': get_session_attributes(intent_request),
+            'dialogAction': {
+                'type': 'ElicitSlot',
+                'slotToElicit': slot_to_elicit,
+            },
+            'intent': intent_request['sessionState']['intent']
         },
-        'intentName': intent_name,
-        'slots': slots,
-        'slotToElicit': slot_to_elicit,
-        'responseCard': response_card
+        'messages': [{
+            'contentType': 'PlainText',
+            'content': message
+        }] if message is not None else None,
+        'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
 
-def confirm(session_attributes, intent_name, slots, slot_to_elicit, message, response_card):
+def confirm(intent_request, message):
     return {
-        'sessionAttributes': session_attributes,
-        'dialogAction': {
-            'type': 'ConfirmIntent',
-            'message': {
-                'contentType': 'PlainText',
-                'content': message
-            }
+        'sessionState': {
+            'activeContexts': get_session_active_contexts(intent_request),
+            'sessionAttributes': get_session_attributes(intent_request),
+            'dialogAction': {
+                'type': 'ConfirmIntent',
+            },
+            'intent': intent_request['sessionState']['intent']
         },
-        'intentName': intent_name,
-        'slots': slots,
-        'slotToElicit': slot_to_elicit,
-        'responseCard': response_card
+        'messages': [{
+            'contentType': 'PlainText',
+            'content': message
+        }] if message is not None else None,
+        'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
 
-def close(session_attributes, fulfillment_state, message):
+def close(intent_request, fulfillment_state, message):
+    intent_request['sessionState']['intent']['state'] = fulfillment_state
     return {
-        'sessionAttributes': session_attributes,
-        'dialogAction': {
-            'type': 'Close',
-            'message': {
-                'contentType': 'PlainText',
-                'content': message
-            }
+        'sessionState': {
+            'sessionAttributes': get_session_attributes(intent_request),
+            'dialogAction': {
+                'type': 'Close'
+            },
+            'intent': intent_request['sessionState']['intent']
         },
-        'fulfillmentState': fulfillment_state
+        'messages': [{
+            'contentType': 'PlainText',
+            'content': message
+        }] if message is not None else None,
+        'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
 
-def delegate(session_attributes, slots):
+def delegate(intent_request, slots):
+    intent_request['sessionState']['intent']['slots'] = slots
     return {
-        'sessionAttributes': session_attributes,
-        'dialogAction': {
-            'type': 'Delegate',
-            'slots': slots
-        }
+        'sessionState': {
+            'sessionAttributes': get_session_attributes(intent_request),
+            'dialogAction': {
+                'type': 'Delegate',
+            },
+            'intent': intent_request['sessionState']['intent']
+        },
+        'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
 
