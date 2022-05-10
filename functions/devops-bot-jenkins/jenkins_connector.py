@@ -1,7 +1,5 @@
-import json
 import os
 import re
-import logging
 import jenkins
 import boto3
 from base64 import b64decode
