@@ -1,5 +1,5 @@
 import logging
-from ..utils import helper
+from functions/utils import helper
 
 from jenkins_connector import get_jenkins_job_console_output
 from consolelog_processor import parse_consolee_log
