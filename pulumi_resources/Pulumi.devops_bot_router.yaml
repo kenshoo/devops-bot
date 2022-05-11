@@ -7,6 +7,7 @@ config:
   lambda:role: pulumi-lambda-service-lambda-template
   lambda:handler: devops_bot_router.lambda_function
   lambda:runtime: python3.8
+  lambda:timeout: 900
   api:description: api to trigger devops-bot-router lambda
   api:path-suffix: test
   api:hosted-zone: internalk-stg.com
