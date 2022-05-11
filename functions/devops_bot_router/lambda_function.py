@@ -27,8 +27,8 @@ def lambda_handler(event, context):
 
 
 intent_handlers = {
-  "jiraTicket": "devops-bot-jira-ticket-intent",
-  "JenkinsJobIssueAnalysis": "devops-bot-jenkins-intent",
-  "LabIssueAnalysis": "devops-bot-lab-issue-intent",
-  "StackOverflowIntent": "devops-bot-stackoverflow-intent"
+  "jiraTicket": "pulumi-lambda-devops-bot-jira-ticket",
+  "JenkinsJobIssueAnalysis": "pulumi-lambda-devops-bot-jenkins",
+  "LabIssueAnalysis": "pulumi-lambda-devops-bot-lab-issue",
+  "StackOverflowIntent": "pulumi-lambda-devops-bot-stackoverflow"
 }
