@@ -1,12 +1,9 @@
-import json
-from operator import itemgetter
-from stackapi import StackAPI
-import requests, traceback, json
+import logging
+import requests
+from functions/utils import helper
 
 STACKOVERFLOW_URL = "https://stackoverflow.com/c/kenshoo/"
 INTENT_NAME = 'StackOverflowIntent'
-get_slots = itemgetter('Keywords')
-
 
 def lambda_handler(event, context):
     print('## EVENT')
@@ -15,23 +12,20 @@ def lambda_handler(event, context):
     print(context)
 
     transcript = event["inputTranscript"]
-    interpretations = event["interpretations"]
-    print("interpretations", interpretations)
-    slots = get_intent_slots(interpretations)
-
-    # query = get_needed_values(slots)
     query = transcript
 
     questions = []
     all_items = []
     site = "stackoverflow"
     qa = "questions"  # or answers
+    token=get_data_from_consul()['Value']
+
     try:
         page = 1
         while 1:
             print(query)
             url = f"https://api.stackexchange.com/2.2/search/advanced/?pagesize=100&page=1&filter=default&key=Su2AR2rGRU1FOWaUH5d3RQ((&title={query}?&team=stackoverflow.com/c/kenshoo&site=stackoverflow"
-            j = requests.get(url, headers={"X-API-Access-Token": "5KZ896CHpnWuHHFyAPhmPQ))"}).json()
+            j = requests.get(url, headers={"X-API-Access-Token": token}).json()
             print(j)
             if j:
 
@@ -53,48 +47,13 @@ def lambda_handler(event, context):
             for item in all_items:
                 print("{0}: {1}".format(item['title'], item['link']))
                 questions.append("{0}: {1}".format(item['title'], item['link']))
-
-        body = create_response('\n'.join(questions))
+        return helper.close(event, 'Fulfilled' '\n'.join(questions))
     except Exception as e:
-        print("An error has occured: ", e)
-        body = create_response(fulfillmentState="Failed")
+        return helper.close(event, 'Failed' 'Sorry, nothing found on stackoverflow.')
 
-    print("Returning body: ", body)
-    return body
-
-
-def create_response(content=None, fulfillmentState="Fulfilled"):
-    if fulfillmentState == "Fulfilled" and content:
-        message = content
-    else:
-        message = "Sorry, nothing found on stackoverflow."
-
-    response = {
-        "messages": [{
-            'contentType': 'PlainText',
-            'content': message
-        }],
-        "sessionState": {
-            "sessionAttributes": {},
-            "intent": {
-                "name": INTENT_NAME,
-                "state": fulfillmentState
-            },
-            "dialogAction": {
-                "type": "Close",
-                "fulfillmentState": fulfillmentState
-            }
-        }
-    }
-    return response
-
-
-def get_intent_slots(interpretations):
-    intent = next((interpretation['intent']['slots'] for interpretation in interpretations if
-                   interpretation['intent']['name'] == INTENT_NAME))
-    print("intent", intent)
-    return intent
-
-
-def get_needed_values(slots):
-    return [slot['value']['originalValue'] for slot in get_slots(slots)]
+def get_data_from_consul():
+    logging.info("Getting data from Consul")
+    response = requests.get(f'http://consul.kenshoo.com/v1/kv/devopsBot/SOToken', timeout=20)
+    if response.status_code != 200:
+        logging.error(f"An error occurred while getting data from GitHub. Status code: {response.status_code}, Reason: {response.reason}. Sending an email")
+    return response.json()
