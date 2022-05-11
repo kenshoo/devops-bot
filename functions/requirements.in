@@ -5,3 +5,4 @@ jwt
 cryptography==3.4.8
 jira
 slack_sdk
+boto3
