@@ -1,6 +1,6 @@
 import logging
 import requests
-from functions/utils import helper
+from functions.utils import helper
 
 STACKOVERFLOW_URL = "https://stackoverflow.com/c/kenshoo/"
 INTENT_NAME = 'StackOverflowIntent'

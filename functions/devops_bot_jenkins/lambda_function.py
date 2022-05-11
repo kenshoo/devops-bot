@@ -1,8 +1,7 @@
 import logging
-from functions/utils import helper
-
-from jenkins_connector import get_jenkins_job_console_output
-from consolelog_processor import parse_consolee_log
+from functions.utils import helper
+from devops_bot_jenkins.jenkins_connector import get_jenkins_job_console_output
+from devops_bot_jenkins.consolelog_processor import parse_consolee_log
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
