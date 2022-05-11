@@ -5,7 +5,7 @@ config:
   lambda:name: devops-bot-jira-ticket
   lambda:type: api_gateway
   lambda:role: pulumi-lambda-service-lambda-template
-  lambda:handler: devops_bot_jira_ticket-intent.lambda_function
+  lambda:handler: devops_bot_jira_ticket.lambda_function
   lambda:runtime: python3.8
   api:description: api to trigger devops-bot-jira-ticket lambda
   api:path-suffix: test

@@ -5,7 +5,7 @@ config:
   lambda:name: devops-bot-stackoverflow
   lambda:type: api_gateway
   lambda:role: pulumi-lambda-service-lambda-template
-  lambda:handler: devops_bot_stackoverflow-intent.lambda_function
+  lambda:handler: devops_bot_stackoverflow.lambda_function
   lambda:runtime: python3.8
   api:description: api to trigger devops-bot-stackoverflow lambda
   api:path-suffix: test
