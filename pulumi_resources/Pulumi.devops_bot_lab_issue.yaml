@@ -10,4 +10,4 @@ config:
   api:description: api to trigger devops-bot-lab-issue lambda
   api:path-suffix: test
   api:hosted-zone: internalk-stg.com
-  api:domain-name: test-slackbot.internalk-stg.com
+  api:domain-name: devops-bot-lab-issue.internalk-stg.com
