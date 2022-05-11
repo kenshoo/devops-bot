@@ -5,7 +5,7 @@ config:
   lambda:name: devops-bot-github-repo
   lambda:type: api_gateway
   lambda:role: pulumi-lambda-service-common-lambda
-  lambda:handler: devops_bot_github_repo.lambda_handler
+  lambda:handler: lambda_function.lambda_handler
   lambda:runtime: python3.8
   lambda:timeout: 900
   api:description: api to trigger devops-bot-github-repo lambda
