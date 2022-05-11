@@ -29,7 +29,9 @@ configparser==5.2.0
 coverage[toml]==6.3.2
     # via pytest-cov
 deprecated==1.2.13
-    # via pygithub
+    # via
+    #   -c functions/requirements.txt
+    #   pygithub
 dill==0.3.4
     # via pulumi
 grpcio==1.43.0
@@ -85,11 +87,17 @@ pycparser==2.21
     #   -c functions/requirements.txt
     #   cffi
 pygithub==1.55
-    # via lambda-tasks-plugin
+    # via
+    #   -c functions/requirements.txt
+    #   lambda-tasks-plugin
 pyjwt==2.3.0
-    # via pygithub
+    # via
+    #   -c functions/requirements.txt
+    #   pygithub
 pynacl==1.5.0
-    # via pygithub
+    # via
+    #   -c functions/requirements.txt
+    #   pygithub
 pyparsing==3.0.8
     # via packaging
 pytest==7.1.1
@@ -135,5 +143,7 @@ urllib3==1.26.9
     #   requests
 vaultka-invoke-plugin==1.0.15
     # via lambda-tasks-plugin
-wrapt==1.14.0
-    # via deprecated
+wrapt==1.14.1
+    # via
+    #   -c functions/requirements.txt
+    #   deprecated

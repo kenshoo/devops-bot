@@ -1,0 +1,13 @@
+config:
+  general:project-name: devops-bot
+  general:owner: microservices@kenshoo.com
+  aws:account: lab
+  lambda:name: devops-bot-github-repo
+  lambda:type: api_gateway
+  lambda:role: pulumi-lambda-service-common-lambda
+  lambda:handler: devops_bot_github_repo.lambda_handler
+  lambda:runtime: python3.8
+  api:description: api to trigger devops-bot-github-repo lambda
+  api:path-suffix: test
+  api:hosted-zone: internalk-stg.com
+  api:domain-name: devops-bot-github-repo.internalk-stg.com
