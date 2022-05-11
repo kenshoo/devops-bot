@@ -10,4 +10,4 @@ config:
   api:description: api to trigger devops-bot-jira-ticket lambda
   api:path-suffix: test
   api:hosted-zone: internalk-stg.com
-  api:domain-name: test-slackbot.internalk-stg.com
+  api:domain-name: devops-bot-jira-ticket.internalk-stg.com
