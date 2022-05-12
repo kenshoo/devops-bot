@@ -11,7 +11,7 @@ stacks_to_lambda_module = {
             'devops_bot_jenkins'],
         entry_point='devops_bot_jenkins/lambda_function.py'),
     'devops_bot_jira_ticket': LambdaModule(
-        packages=['utils'],
+        packages=['utils', 'devops_bot_jira_ticket'],
         entry_point='devops_bot_jira_ticket/lambda_function.py'),
     'devops_bot_lab_issue': LambdaModule(
         packages=['utils'],
