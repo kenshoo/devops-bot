@@ -5,7 +5,7 @@ import ssl
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-from devops_bot_jira_ticket.jira_response_builder import JiraResponseBuilder
+from functions.devops_bot_jira_ticket.jira_response_builder import JiraResponseBuilder
 
 
 SEVERITY = "customfield_10411"
