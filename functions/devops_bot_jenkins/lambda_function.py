@@ -1,7 +1,7 @@
 import logging
 from functions.utils import helper
-from devops_bot_jenkins.jenkins_connector import get_jenkins_job_console_output
-from devops_bot_jenkins.consolelog_processor import parse_consolee_log
+from functions.devops_bot_jenkins.jenkins_connector import get_jenkins_job_console_output
+from functions.devops_bot_jenkins.consolelog_processor import parse_console_log
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -22,7 +22,7 @@ def lambda_handler(event, context):
 
     try:
         output = get_jenkins_job_console_output(jenkins_job_url)
-        processed = parse_consolee_log(output)
+        processed = parse_console_log(output)
         message = f"The failed command in your build is {processed['command']}\n" \
                   f"and this are the related errors {processed['errors']}"
 

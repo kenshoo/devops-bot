@@ -30,6 +30,7 @@ def build_exception_code(lines):
         continue
     return log_exception
 
-def parse_consolee_log(console_output):
+
+def parse_console_log(console_output):
     build_exception_code(console_output)
     return output

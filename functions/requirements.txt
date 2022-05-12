@@ -38,7 +38,9 @@ defusedxml==0.7.1
     #   -c ../functions/requirements.txt
     #   jira
 deprecated==1.2.13
-    # via pygithub
+    # via
+    #   -c ../functions/requirements.txt
+    #   pygithub
 hvac==0.10.5
     # via
     #   -c ../functions/requirements.txt
@@ -51,6 +53,8 @@ importlib-metadata==4.11.3
     # via
     #   -c ../functions/requirements.txt
     #   keyring
+jenkins==1.0.2
+    # via -r requirements.in
 jira==3.1.1
     # via
     #   -c ../functions/requirements.txt
@@ -77,11 +81,17 @@ pycparser==2.21
     #   -c ../functions/requirements.txt
     #   cffi
 pygithub==1.55
-    # via -r requirements.in
+    # via
+    #   -c ../functions/requirements.txt
+    #   -r requirements.in
 pyjwt==2.3.0
-    # via pygithub
+    # via
+    #   -c ../functions/requirements.txt
+    #   pygithub
 pynacl==1.5.0
-    # via pygithub
+    # via
+    #   -c ../functions/requirements.txt
+    #   pygithub
 python-dateutil==2.8.2
     # via
     #   -c ../functions/requirements.txt
@@ -122,7 +132,9 @@ urllib3==1.26.9
     #   botocore
     #   requests
 wrapt==1.14.1
-    # via deprecated
+    # via
+    #   -c ../functions/requirements.txt
+    #   deprecated
 zipp==3.8.0
     # via
     #   -c ../functions/requirements.txt
