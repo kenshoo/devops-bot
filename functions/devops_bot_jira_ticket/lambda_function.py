@@ -5,22 +5,25 @@ import ssl
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-jira_intent = "jiraTicket"
-get_slots = itemgetter('severity', 'supportType', 'reportingTeam', 'components', 'requestImpact', 'summary')
+from devops_bot_jira_ticket.jira_response_builder import JiraResponseBuilder
 
+
+SEVERITY = "customfield_10411"
+SUPPORT_TYPE = "customfield_15415"
+REQUEST_IMPACT = "customfield_15412"
+REPORTING_TEAM = "customfield_15417"
+BASE_URL = "https://kenshoo.atlassian.net"
+JIRA_INTENT = "jiraTicket"
 
 def lambda_handler(event, context):
-    severity = "customfield_10411"
-    supporttype = "customfield_15415"
-    request_impact = "customfield_15412"
-    reporting_team = "customfield_15417"
     print('## EVENT')
     print(event)
     print("## CONTEXT")
     print(context)
+    response_builder = JiraResponseBuilder(event)
     token = os.environ.get('JIRA_TOKEN')
-    base_url = "https://kenshoo.atlassian.net"
-    jira = JIRA(server=base_url, basic_auth=("aws-iam-rotator@kenshoo.com", token))
+    
+    jira = JIRA(server=BASE_URL, basic_auth=("aws-iam-rotator@kenshoo.com", token))
 
     transcript = event["inputTranscript"]
     interpretations = event["interpretations"]
@@ -29,13 +32,14 @@ def lambda_handler(event, context):
 
     severity_val, support_type, team, component, request_impact_val, summary = get_needed_values(slots)
 
+
     create_issue_payload = {
         "project": {'key': 'DEVOPS'},
         "issuetype": {'name': 'Support'},
-        severity: {'value': severity_val},
-        supporttype: {'value': support_type},
-        request_impact: {'value': request_impact_val},
-        reporting_team: {'value': team},
+        SEVERITY: {'value': severity_val},
+        SUPPORT_TYPE: {'value': support_type},
+        REQUEST_IMPACT: {'value': request_impact_val},
+        REPORTING_TEAM: {'value': team},
         "components": [{"name": component}],
         "summary": summary,
         "description": transcript
@@ -68,51 +72,55 @@ def lambda_handler(event, context):
         issue.update(fields=issue_update_payload)
         print("Updated labels: ", issue.fields.labels)
 
-        body = create_response(base_url, issue)
+        body = create_response(response_builder, issue)
     except Exception as e:
         print("An error has occured: ", e)
-        body = create_response(fulfillmentState="Failed")
+        body = create_response(response_builder, fulfillmentState="Failed")
 
     print("Returning body: ", body)
     return body
 
 
-def create_response(base_url=None, issue=None, fulfillmentState="Fulfilled"):
+def create_response(response_builder, issue=None, fulfillmentState="Fulfilled"):
     if fulfillmentState == "Fulfilled":
-        message = f"Your ticket has been opened here => {base_url}/browse/{issue.key}"
+        message = f"Your ticket has been opened here => {BASE_URL}/browse/{issue.key}"
     else:
         message = "Your ticket could not be opened"
 
-    response = {
-        "messages": [{
-            'contentType': 'PlainText',
-            'content': message
-        }],
-        "sessionState": {
-            "sessionAttributes": {},
-            "intent": {
-                "name": jira_intent,
-                "state": fulfillmentState
-            },
-            "dialogAction": {
-                "type": "Close",
-                "fulfillmentState": fulfillmentState
-            }
-        }
-    }
-    return response
+    response = response_builder.with_fulfillment_state(fulfillmentState).with_message(message)
+
+    # {
+    #     "messages": [{
+    #         'contentType': 'PlainText',
+    #         'content': message
+    #     }],
+    #     "sessionState": {
+    #         "sessionAttributes": {},
+    #         "intent": {
+    #             "name": jira_intent,
+    #             "state": fulfillmentState
+    #         },
+    #         "dialogAction": {
+    #             "type": "Close",
+    #             "fulfillmentState": fulfillmentState
+    #         }
+    #     }
+    # }
+    return response.build()
 
 
 def get_jira_intent_slots(interpretations):
-    a = next((interpretation['intent']['slots'] for interpretation in interpretations if
-              interpretation['intent']['name'] == jira_intent))
+    a = next((interpretation['intent']['slots'] for interpretation in interpretations
+              if interpretation['intent']['name'] == JIRA_INTENT))
     print("a", a)
     return a
 
 
 def get_needed_values(slots):
     print("slots", slots)
-    return [slot['value']['originalValue'] for slot in get_slots(slots)]
+    get_specific_slots = itemgetter('severity', 'supportType', 'reportingTeam',
+                                    'components', 'requestImpact', 'summary')
+    return [slot['value']['originalValue'] for slot in get_specific_slots(slots)]
 
 
 def get_email_from_slack(user_id):
