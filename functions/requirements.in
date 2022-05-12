@@ -7,3 +7,4 @@ jira
 slack_sdk
 boto3
 PyGithub
+jenkins
