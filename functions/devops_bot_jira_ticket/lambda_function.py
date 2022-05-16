@@ -1,12 +1,12 @@
+import json
 import os
 from operator import itemgetter
 from jira import JIRA
 import ssl
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-
-from functions.devops_bot_jira_ticket.jira_response_builder import JiraResponseBuilder
-
+from functions.utils import helper
+from functions.utils.helper import logger
 
 SEVERITY = "customfield_10411"
 SUPPORT_TYPE = "customfield_15415"
@@ -15,115 +15,44 @@ REPORTING_TEAM = "customfield_15417"
 BASE_URL = "https://kenshoo.atlassian.net"
 JIRA_INTENT = "jiraTicket"
 
+
 def lambda_handler(event, context):
-    print('## EVENT')
-    print(event)
-    print("## CONTEXT")
-    print(context)
-    response_builder = JiraResponseBuilder(event)
-    token = os.environ.get('JIRA_TOKEN')
-    
-    jira = JIRA(server=BASE_URL, basic_auth=("aws-iam-rotator@kenshoo.com", token))
+    helper.dump(event.event, context)
 
-    transcript = event["inputTranscript"]
-    interpretations = event["interpretations"]
-    print("interpretations", interpretations)
-    slots = get_jira_intent_slots(interpretations)
-
-    severity_val, support_type, team, component, request_impact_val, summary = get_needed_values(slots)
-
-
-    create_issue_payload = {
-        "project": {'key': 'DEVOPS'},
-        "issuetype": {'name': 'Support'},
-        SEVERITY: {'value': severity_val},
-        SUPPORT_TYPE: {'value': support_type},
-        REQUEST_IMPACT: {'value': request_impact_val},
-        REPORTING_TEAM: {'value': team},
-        "components": [{"name": component}],
-        "summary": summary,
-        "description": transcript
-    }
-
-    user_slack_id = event.get('sessionId', "").split(":")[-1]
-    user_slack_id = "U1NDHKECU"
+    obj = {}
+    obj.transcript = helper.get_transcript(event)
+    # obj.user_slack_id = event.get('sessionId', "").split(":")[-1]
+    obj.user_slack_id = "U1NDHKECU"
+    slots = helper.get_slots(event)
+    obj.severity_val, obj.support_type, obj.team, obj.component, obj.request_impact_val, obj.summary \
+        = _get_needed_values(slots)
+    if not _validate_slots(obj):
+        return helper.elicit_slot(event, '', _get_slack_block_kits(obj))
 
     try:
-        print("About to create an issue with these fields: ", create_issue_payload)
-        issue = jira.create_issue(fields=create_issue_payload)
-        print("Ticket created: ", issue.key)
-        issue.fields.labels.append("devops-bot")
-
-        issue_update_payload = {
-            "fields": {
-                "labels": issue.fields.labels
-            }
-        }
-
-        if user_slack_id:
-            email = get_email_from_slack(user_slack_id)
-            if email:
-                jira_user_id = jira._get_user_id(email)
-
-                if jira_user_id:
-                    issue.fields.reporter = {"accountId": jira_user_id}
-                    issue_update_payload["fields"]["repoter"] = issue.fields.reporter
-
-        issue.update(fields=issue_update_payload)
-        print("Updated labels: ", issue.fields.labels)
-
-        body = create_response(response_builder, issue)
-    except Exception as e:
-        print("An error has occured: ", e)
-        body = create_response(response_builder, fulfillmentState="Failed")
-
-    print("Returning body: ", body)
-    return body
-
-
-def create_response(response_builder, issue=None, fulfillmentState="Fulfilled"):
-    if fulfillmentState == "Fulfilled":
+        issue = _create_jira_ticket(obj)
         message = f"Your ticket has been opened here => {BASE_URL}/browse/{issue.key}"
-    else:
-        message = "Your ticket could not be opened"
-
-    response = response_builder.with_fulfillment_state(fulfillmentState).with_message(message)
-
-    # {
-    #     "messages": [{
-    #         'contentType': 'PlainText',
-    #         'content': message
-    #     }],
-    #     "sessionState": {
-    #         "sessionAttributes": {},
-    #         "intent": {
-    #             "name": jira_intent,
-    #             "state": fulfillmentState
-    #         },
-    #         "dialogAction": {
-    #             "type": "Close",
-    #             "fulfillmentState": fulfillmentState
-    #         }
-    #     }
-    # }
-    return response.build()
+        return helper.close(event, "Fulfilled", message)
+    except Exception as e:
+        logger.error("An error has occurred: ", e)
+        return helper.close(event, "Failed", f'Error: your ticket could not be opened: {str(e)}')
 
 
-def get_jira_intent_slots(interpretations):
-    a = next((interpretation['intent']['slots'] for interpretation in interpretations
-              if interpretation['intent']['name'] == JIRA_INTENT))
-    print("a", a)
-    return a
+def _validate_slots(obj):
+    for k in obj:
+        if k is None:
+            return False
+    return True
 
 
-def get_needed_values(slots):
-    print("slots", slots)
+def _get_needed_values(slots):
+    logger.debug("slots", slots)
     get_specific_slots = itemgetter('severity', 'supportType', 'reportingTeam',
                                     'components', 'requestImpact', 'summary')
     return [slot['value']['originalValue'] for slot in get_specific_slots(slots)]
 
 
-def get_email_from_slack(user_id):
+def _get_email_from_slack(user_id):
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
@@ -133,5 +62,208 @@ def get_email_from_slack(user_id):
         result = client.users_info(user=user_id)
         return result.get("user").get("profile").get("email")
     except SlackApiError as e:
-        print("Couldn't get slack user's email: ", e)
+        logger.error("Couldn't get slack user's email: ", e)
         return None
+
+
+def _create_jira_ticket(obj):
+    token = os.environ.get('JIRA_TOKEN')
+    jira = JIRA(server=BASE_URL, basic_auth=("aws-iam-rotator@kenshoo.com", token))
+    create_issue_payload = {
+        "project": {'key': 'DEVOPS'},
+        "issuetype": {'name': 'Support'},
+        SEVERITY: {'value': obj.severity_val},
+        SUPPORT_TYPE: {'value': obj.support_type},
+        REQUEST_IMPACT: {'value': obj.request_impact_val},
+        REPORTING_TEAM: {'value': obj.team},
+        "components": [{"name": obj.component}],
+        "summary": obj.summary,
+        "description": obj.transcript
+    }
+
+    logger.log("About to create an issue with these fields: ", create_issue_payload)
+    issue = jira.create_issue(fields=create_issue_payload)
+    logger.log("Ticket created: ", issue.key)
+    issue.fields.labels.append("devops-bot")
+
+    issue_update_payload = {
+        "fields": {
+            "labels": issue.fields.labels
+        }
+    }
+
+    if obj.user_slack_id:
+        email = _get_email_from_slack(obj.user_slack_id)
+        if email:
+            jira_user_id = jira._get_user_id(email)
+
+            if jira_user_id:
+                issue.fields.reporter = {"accountId": jira_user_id}
+                issue_update_payload["fields"]["reporter"] = issue.fields.reporter
+
+    issue.update(fields=issue_update_payload)
+    logger.log("Updated labels: ", issue.fields.labels)
+    return issue
+
+
+def _get_slack_block_kits(obj):
+    return json.load({
+        "blocks": [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Hello {UserName} to proceed in creating a ticket, please fill out the following survey.\n *Make sure to fill all the fields*:\n\n "
+                }
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "plain_text_input-action"
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Ticket title",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "static_select",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Select an item",
+                        "emoji": True
+                    },
+                    "options": [
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Team1",
+                                "emoji": True
+                            },
+                            "value": "value-0"
+                        },
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Team2",
+                                "emoji": True
+                            },
+                            "value": "value-1"
+                        },
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Team3",
+                                "emoji": True
+                            },
+                            "value": "value-2"
+                        }
+                    ],
+                    "action_id": "static_select-action"
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Reporting Team (need to create logic to import the list)",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "static_select",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Select an item",
+                        "emoji": True
+                    },
+                    "options": [
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "*this is plain_text text*",
+                                "emoji": True
+                            },
+                            "value": "value-0"
+                        }
+                    ],
+                    "action_id": "static_select-action"
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Support Type (import options from JIRA/list)",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "static_select",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Select an item",
+                        "emoji": True
+                    },
+                    "options": [
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "*Low*",
+                                "emoji": True
+                            },
+                            "value": "value-0"
+                        },
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "*Middle*",
+                                "emoji": True
+                            },
+                            "value": "value-1"
+                        },
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "*High*",
+                                "emoji": True
+                            },
+                            "value": "value-2"
+                        },
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "*Hotfix*",
+                                "emoji": True
+                            },
+                            "value": "value-3"
+                        }
+                    ],
+                    "action_id": "static_select-action"
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Severity",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "multiline": True,
+                    "action_id": "plain_text_input-action"
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Description(What did you try, what conclusions you have, any info)",
+                    "emoji": True
+                }
+            }
+        ]
+    })

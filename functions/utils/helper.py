@@ -1,8 +1,13 @@
+import json
+import os
 import logging
 import dateutil.parser
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+try:
+    logger.setLevel(os.environ.get("LOG_LEVEL"))
+except (ValueError, TypeError) as e:
+    logger.setLevel(logger.INFO)
 
 """ --- Helpers to build responses which match the structure of the necessary dialog actions --- """
 
@@ -20,6 +25,10 @@ def get_slot(intent_request, slot_name):
         return slots[slot_name]['value']['interpretedValue']
     else:
         return None
+
+
+def get_transcript(intent_request):
+    return intent_request["inputTranscript"]
 
 
 def get_session_attributes(intent_request):
@@ -43,11 +52,8 @@ def elicit_intent(intent_request, message=None):
             'dialogAction': {
                 'type': 'ElicitIntent',
             },
-         },
-        'messages': [{
-            'contentType': 'PlainText',
-            'content': message
-        }] if message is not None else None,
+        },
+        'messages': _get_message(message),
         'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
@@ -63,10 +69,7 @@ def elicit_slot(intent_request, slot_to_elicit, message):
             },
             'intent': intent_request['sessionState']['intent']
         },
-        'messages': [{
-            'contentType': 'PlainText',
-            'content': message
-        }] if message is not None else None,
+        'messages': _get_message(message),
         'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
@@ -81,10 +84,7 @@ def confirm(intent_request, message):
             },
             'intent': intent_request['sessionState']['intent']
         },
-        'messages': [{
-            'contentType': 'PlainText',
-            'content': message
-        }] if message is not None else None,
+        'messages': _get_message(message),
         'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
@@ -99,10 +99,7 @@ def close(intent_request, fulfillment_state, message):
             },
             'intent': intent_request['sessionState']['intent']
         },
-        'messages': [{
-            'contentType': 'PlainText',
-            'content': message
-        }] if message is not None else None,
+        'messages': _get_message(message),
         'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
 
@@ -119,6 +116,18 @@ def delegate(intent_request, slots):
         },
         'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
+
+
+def _get_message(message):
+    if message is None:
+        return None
+    elif str(message) == message:
+        return [{
+            'contentType': 'PlainText',
+            'content': message
+        }]
+    else:
+        return [message]
 
 
 """ --- Helper Functions --- """
@@ -151,3 +160,8 @@ def isvalid_date(date):
         return True
     except ValueError:
         return False
+
+
+def dump(event, context):
+    logger.debug(f'# Event #\n {json.dumps(event)}')
+    logger.debug(f'# Context #\n {json.dumps(context)}')

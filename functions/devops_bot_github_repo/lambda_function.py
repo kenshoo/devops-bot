@@ -1,6 +1,8 @@
 import os
 import time
 from github import Github
+from functions.utils import helper
+from functions.utils.helper import logger
 
 HUBOT_CONFIG = {'name': 'web',
                 'config': {'insecure_ssl': '0', 'content_type': 'json',
@@ -29,12 +31,14 @@ def _ok_with_result(repo_name):
 
 
 def lambda_handler(event, context):
+    helper.dump(event, context)
+
     gh_token = os.getenv("GITHUB_TOKEN")
     g = Github(gh_token)
     org = g.get_organization("kenshoo")
     query_string_params = event['queryStringParameters']
     repo_name_param = query_string_params['repo_name']
-    print("the input repo name: " + repo_name_param)
+    logger.debug("the input repo name: " + repo_name_param)
     new_repo = org.create_repo(name=repo_name_param,
                                private=True,
                                auto_init=True,
@@ -42,12 +46,12 @@ def lambda_handler(event, context):
                                delete_branch_on_merge=True)
     time.sleep(5)
     _create_default_webhooks(new_repo)
-    print("webhooks created")
+    logger.info("webhooks created")
     created_repo = org.get_repo(repo_name_param)
     master = created_repo.get_branch("master")
-    print("I got master")
+    logger.info("I got master")
     master.edit_protection(strict=True,
                            contexts=["default", "SpectralCheck"],
                            required_approving_review_count=1)
-    print("set protection")
+    logger.info("set protection")
     return _ok_with_result(repo_name_param)

@@ -1,22 +1,12 @@
-import logging
 from functions.utils import helper
 from functions.devops_bot_jenkins.jenkins_connector import get_jenkins_job_console_output
 from functions.devops_bot_jenkins.consolelog_processor import parse_console_log
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-INTENT_NAME = 'JenkinsJobIssueAnalysis'
-
 
 def lambda_handler(event, context):
-    print('## EVENT')
-    print(event)
-    print("## CONTEXT")
-    print(context)
+    helper.dump(event, context)
 
-    slots = helper.get_slots(event)
-    jenkins_job_url = helper.get_slot(slots, 'JenkinsJobUrl')
+    jenkins_job_url = helper.get_slot(event, 'JenkinsJobUrl')
     if jenkins_job_url is not None:
         jenkins_job_url = jenkins_job_url.replace('<', '').replace('>', '')
 
