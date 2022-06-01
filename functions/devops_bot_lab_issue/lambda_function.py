@@ -11,6 +11,7 @@ def ask_for_jira(intent_request):
     else:
         message = {
             "contentType": "ImageResponseCard",
+            "content": "string",
             "imageResponseCard": {
                 "title": "Do you want to open a ticket to devops?",
                 "buttons": [
