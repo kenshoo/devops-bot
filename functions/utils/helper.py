@@ -36,7 +36,7 @@ def get_session_attributes(intent_request):
     session_state = intent_request['sessionState']
     if 'sessionAttributes' in session_state:
         return session_state['sessionAttributes']
-    return []
+    return {}
 
 
 def get_session_active_contexts(intent_request):
@@ -73,7 +73,7 @@ def elicit_slot(intent_request, slot_to_elicit, message):
         'messages': _get_message(message),
         'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
-
+{"sessionState": {"activeContexts": [], "sessionAttributes": [], "dialogAction": {"type": "ElicitSlot", "slotToElicit": "severity"}, "intent": {"slots": {"severity": null, "summary": null, "supportType": null, "components": null, "reportingTeam": null, "requestImpact": null}, "confirmationState": "None", "name": "jiraTicket", "state": "InProgress"}}, "messages": [{"contentType": "PlainText", "content": "Please provide a value for severity"}], "requestAttributes": {"x-amz-lex:channels:platform": "Slack"}}
 
 def confirm(intent_request, message):
     return {
@@ -158,7 +158,7 @@ def build_validation_result(is_valid, violated_slot, message_content):
     return {
         'isValid': is_valid,
         'violatedSlot': violated_slot,
-        'message': {'contentType': 'PlainText', 'content': message_content}
+        'message': message_content
     }
 
 
