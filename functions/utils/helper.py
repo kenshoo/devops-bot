@@ -7,7 +7,7 @@ logger = logging.getLogger()
 try:
     logger.setLevel(os.environ.get("LOG_LEVEL"))
 except (ValueError, TypeError) as e:
-    logger.setLevel(logger.INFO)
+    logger.setLevel(logging.INFO)
 
 """ --- Helpers to build responses which match the structure of the necessary dialog actions --- """
 
@@ -163,5 +163,5 @@ def isvalid_date(date):
 
 
 def dump(event, context):
-    logger.debug(f'# Event #\n {json.dumps(event)}')
-    logger.debug(f'# Context #\n {json.dumps(context)}')
+    logger.debug(f'# Event #\n {event}')
+    logger.debug(f'# Context #\n {context}')

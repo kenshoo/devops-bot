@@ -1,0 +1,67 @@
+{
+  "messages": [
+    {
+      "content": "Hi Skaier",
+      "contentType": "PlainText"
+    }
+  ],
+  "sessionState": {
+    "dialogAction": {
+      "type": "Close"
+    },
+    "intent": {
+      "name": "GreetingIntent",
+      "slots": {},
+      "state": "ReadyForFulfillment",
+      "confirmationState": "None"
+    },
+    "originatingRequestId": "ed6533da-d9ba-43fe-b8eb-08c98a88a006"
+  },
+  "interpretations": [
+    {
+      "nluConfidence": {
+        "score": 1
+      },
+      "intent": {
+        "name": "GreetingIntent",
+        "slots": {},
+        "state": "ReadyForFulfillment",
+        "confirmationState": "None"
+      }
+    },
+    {
+      "nluConfidence": {
+        "score": 0.59
+      },
+      "intent": {
+        "name": "Help",
+        "slots": {}
+      }
+    },
+    {
+      "nluConfidence": {
+        "score": 0.56
+      },
+      "intent": {
+        "name": "StartOverIntent",
+        "slots": {}
+      }
+    },
+    {
+      "intent": {
+        "name": "FallbackIntent",
+        "slots": {}
+      }
+    },
+    {
+      "nluConfidence": {
+        "score": 0.53
+      },
+      "intent": {
+        "name": "StopIntent",
+        "slots": {}
+      }
+    }
+  ],
+  "sessionId": "668139184987305"
+}
