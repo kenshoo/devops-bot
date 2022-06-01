@@ -32,7 +32,7 @@ def _ok_with_result(repo_name):
 
 def lambda_handler(event, context):
     helper.dump(event, context)
-
+    
     gh_token = os.getenv("GITHUB_TOKEN")
     g = Github(gh_token)
     org = g.get_organization("kenshoo")
