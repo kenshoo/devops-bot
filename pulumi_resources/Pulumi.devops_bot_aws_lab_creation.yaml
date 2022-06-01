@@ -1,0 +1,14 @@
+config:
+  general:project-name: devops-bot
+  general:owner: _ks-platform@kenshoo.com
+  aws:account: lab
+  lambda:name: devops_bot_aws_lab_creation
+  lambda:type: api_gateway
+  lambda:role: pulumi-lambda-service-lambda-template
+  lambda:handler: lambda_function.lambda_handler
+  lambda:runtime: python3.8
+  lambda:timeout: 900
+  api:description: api to trigger devops-bot-jenkins lambda
+  api:path-suffix: test
+  api:hosted-zone: internalk-stg.com
+  api:domain-name: devops-bot-aws-lab-creation.internalk-stg.com
