@@ -36,8 +36,7 @@ def lambda_handler(event, context):
     gh_token = os.getenv("GITHUB_TOKEN")
     g = Github(gh_token)
     org = g.get_organization("kenshoo")
-    query_string_params = event['queryStringParameters']
-    repo_name_param = query_string_params['repo_name']
+    repo_name_param = helper.get_slot(event, 'repo_name')
     logger.debug("the input repo name: " + repo_name_param)
     new_repo = org.create_repo(name=repo_name_param,
                                private=True,
