@@ -1,8 +1,9 @@
 import requests
 from functions.utils import helper
 from functions.utils.helper import logger
+import os
 
-STACKOVERFLOW_URL = "https://stackoverflow.com/c/kenshoo/"
+STACKOVERFLOW_URL = "stackoverflow.com/c/kenshoo"
 
 
 def lambda_handler(event, context):
@@ -15,13 +16,15 @@ def lambda_handler(event, context):
     all_items = []
     site = "stackoverflow"
     qa = "questions"  # or answers
-    token = get_data_from_consul()['Value']
+    # token = get_data_from_consul()[0]['Value']
+    token = os.getenv('STACKOVERFLOW_TOKEN')
+    print(token)
 
     try:
         page = 1
         while 1:
             logger.debug(query)
-            url = f"https://api.stackexchange.com/2.2/search/advanced/?pagesize=100&page=1&filter=default&key=Su2AR2rGRU1FOWaUH5d3RQ((&title={query}?&team=stackoverflow.com/c/kenshoo&site=stackoverflow"
+            url = f"https://api.stackexchange.com/2.2/search/advanced/?pagesize=100&page=1&filter=default&key=WYpIqX0UcIHHopYLKw3wXQ((&title={query}?&team={STACKOVERFLOW_URL}&site=stackoverflow"
             j = requests.get(url, headers={"X-API-Access-Token": token}).json()
             logger.debug(j)
             if j:
@@ -44,9 +47,9 @@ def lambda_handler(event, context):
             for item in all_items:
                 logger.debug("{0}: {1}".format(item['title'], item['link']))
                 questions.append("{0}: {1}".format(item['title'], item['link']))
-        return helper.close(event, 'Fulfilled' '\n'.join(questions))
+        return helper.close(event, 'Fulfilled', '\n'.join(questions))
     except Exception as e:
-        return helper.close(event, 'Failed' 'Sorry, nothing found on stackoverflow.')
+        return helper.close(event, 'Failed', 'Sorry, nothing found on stackoverflow.')
 
 
 def get_data_from_consul():
