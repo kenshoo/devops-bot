@@ -21,7 +21,8 @@ stacks_to_lambda_module = {
         entry_point='devops_bot_stackoverflow/lambda_function.py'),
 
     'devops_bot_aws_lab_creation': LambdaModule(
-        packages=['utils'],
+        packages=['utils',
+                  'devops_bot_aws_lab_creation'],
         entry_point='devops_bot_aws_lab_creation/lambda_function.py')
 }
 
