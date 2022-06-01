@@ -12,9 +12,6 @@ except (ValueError, TypeError) as e:
 """ --- Helpers to build responses which match the structure of the necessary dialog actions --- """
 
 
-# def get_slots(request, intent):
-#     return filter(lambda i: i.name == intent, request['interpretations'])[0]['slots']
-
 def get_slots(intent_request):
     return intent_request['sessionState']['intent']['slots']
 
@@ -31,18 +28,22 @@ def get_transcript(intent_request):
     return intent_request["inputTranscript"]
 
 
+def get_invocation_source(intent_request):
+    return intent_request['invocationSource']
+
+
 def get_session_attributes(intent_request):
     session_state = intent_request['sessionState']
     if 'sessionAttributes' in session_state:
         return session_state['sessionAttributes']
-    return {}
+    return []
 
 
 def get_session_active_contexts(intent_request):
     session_state = intent_request['sessionState']
     if 'activeContexts' in session_state:
         return session_state['activeContexts']
-    return {}
+    return []
 
 
 def elicit_intent(intent_request, message=None):
@@ -138,6 +139,13 @@ def parse_int(n):
         return int(n)
     except ValueError:
         return float('nan')
+
+
+def validate_slots(slots):
+    for k, v in slots.items():
+        if not v:
+            return build_validation_result(False, k, f"Please provide a value for {k}")
+    return build_validation_result(True, None, None)
 
 
 def build_validation_result(is_valid, violated_slot, message_content):
