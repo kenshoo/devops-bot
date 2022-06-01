@@ -163,5 +163,5 @@ def isvalid_date(date):
 
 
 def dump(event, context):
-    logger.debug(f'# Event #\n {event}')
+    logger.debug(f'# Event #\n {json.dumps(event)}')
     logger.debug(f'# Context #\n {context}')
