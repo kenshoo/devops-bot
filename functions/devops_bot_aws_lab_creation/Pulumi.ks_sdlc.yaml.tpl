@@ -10,4 +10,10 @@ config:
   db:instance_size: r5.xlarge
   db:tmp_size: 20
   db:tmpdb_size: {{ tmpdb }}
-  ks:id: {{ ks-name }}
+  ks:id: {{ ks_name }}
+  {% if source_ks_id is defined %}
+  ks:source_mysql_ks: ks{{ source_ks_id }}
+  {% endif %}
+  ks:tags:
+    Email: {{ email }}
+  registration:krem: {{ is_memsql }}

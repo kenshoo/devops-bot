@@ -1,8 +1,9 @@
 import traceback
+from jinja2 import Template
 
-TEMPLATE_PATH = 'Pulumi.ks_sdlc.yaml.tpl'
+TEMPLATE_PATH = 'functions/devops_bot_aws_lab_creation/Pulumi.ks_sdlc.yaml.tpl'
 MASTER_JOB = 'Build_KS_AWS'
-DEFAULT_PARAMS_DICT = {'root_size': 30, 'kdata': 20, 'local': 60,
+DEFAULT_PARAMS_DICT = {'ks_namne': '', 'root_size': 30, 'kdata': 20, 'local': 60,
                        'binlog': 100, 'data1': 200, 'data2': 20, 'db_root_size': 30,
                        'tmpdb': 80}
 
@@ -16,11 +17,9 @@ class ServersCreator(object):
 
     @staticmethod
     def create_stack_text_from_template(params_dict):
-        with open(TEMPLATE_PATH, 'r') as stack_template:
-            stack_text = stack_template.read()
-            for key, value in params_dict.items():
-                stack_text = stack_text.replace(f'{{{{ {key} }}}}', str(value))
-        return stack_text
+        with open('stack.j2', 'r') as stack_template:
+            stack_text = Template(stack_template.read())
+        return stack_text.render(params_dict)
 
     def is_stack_exists_in_master(self):
         return self._github_env_utils.file_exists_in_branch(f'ks/environments/sdlc/Pulumi.sdlc-{self._ks_name}.yaml',
@@ -30,7 +29,7 @@ class ServersCreator(object):
         self._pr_utils.create_side_branch()
         self._pr_utils.create_file(f'ks/environments/sdlc/Pulumi.sdlc-{self._ks_name}.yaml', stack_text,
                                    f'{self._ks_name} migration servers creation')
-        return self._pr_utils.create_pr(f'Migration Automation: Servers Creation for {self._ks_name}')
+        return self._pr_utils.create_pr(f'DevOps Bot: Lab Creation for {self._ks_name}')
 
     def merge_pr(self, pr_obj):
         if self._pr_utils.validate_pr_checks_is_success(pr_obj):
@@ -48,29 +47,32 @@ class ServersCreator(object):
                                                            })
 
 
-def run_workflow(jenkins, github_env, pr_utils, _lab_params, ks_name):
-    params_dict = create_params_dict_from_dynamodb_item(_lab_params)
+def run_workflow(jenkins, github_env, pr_utils, _lab_params):
+    ks_name = f'{_lab_params.get("team_name")}{_lab_params.get("source_ks_id")}'
+    params_dict = create_params_dict_from_evnet_config(_lab_params, ks_name)
     server_creator = ServersCreator(jenkins, github_env, pr_utils, ks_name)
     stack_text = server_creator.create_stack_text_from_template(params_dict)
     if not server_creator.is_stack_exists_in_master():
         master_build_num = server_creator.merge_pr(server_creator.create_pr(stack_text))
     else:
-        master_build_num = jenkins.trigger_jenkins_job(MASTER_JOB, {'ks_id': f'{ks_id}', 'ks_env': 'sdlc'})['number']
+        master_build_num = jenkins.trigger_jenkins_job(MASTER_JOB, {'ks_id': f'{ks_name}', 'ks_env': 'sdlc'})['number']
     server_creator.validate_master_build(master_build_num)
+    return master_build_num
 
 
-def servers_creation_main(jenkins, github_env, pr_utils, _lab_params, ks_name):
+def servers_creation_main(jenkins, github_env, pr_utils, _lab_params):
     try:
-        run_workflow(jenkins, github_env, pr_utils, _lab_params, ks_name)
+        run_workflow(jenkins, github_env, pr_utils, _lab_params)
     except Exception as e:
         print('An error occurred during servers creation, please check. Exception: {0}'.format(str(e)))
         traceback.print_tb(e.__traceback__)
         exit(1)
 
 
-def create_params_dict_from_dynamodb_item(_lab_params):
-    item = _lab_params
+
+
+def create_params_dict_from_evnet_config(_lab_params, ks_name):
     params_dict = DEFAULT_PARAMS_DICT.copy()
-    params_dict.update(item['migration']['origin_dc_servers']['capacity']['app'])
-    params_dict.update(item['migration']['origin_dc_servers']['capacity']['db'])
+    params_dict.update(_lab_params)
+    params_dict.update(ks_name=ks_name)
     return params_dict
