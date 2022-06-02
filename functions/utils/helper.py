@@ -73,7 +73,7 @@ def elicit_slot(intent_request, slot_to_elicit, message):
         'messages': _get_message(message),
         'requestAttributes': intent_request['requestAttributes'] if 'requestAttributes' in intent_request else None
     }
-{"sessionState": {"activeContexts": [], "sessionAttributes": [], "dialogAction": {"type": "ElicitSlot", "slotToElicit": "severity"}, "intent": {"slots": {"severity": null, "summary": null, "supportType": null, "components": null, "reportingTeam": null, "requestImpact": null}, "confirmationState": "None", "name": "jiraTicket", "state": "InProgress"}}, "messages": [{"contentType": "PlainText", "content": "Please provide a value for severity"}], "requestAttributes": {"x-amz-lex:channels:platform": "Slack"}}
+
 
 def confirm(intent_request, message):
     return {

@@ -2,7 +2,7 @@ import os
 import ssl
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from helper import logger
+from .helper import logger
 
 ssl_context = ssl.create_default_context()
 ssl_context.check_hostname = False
