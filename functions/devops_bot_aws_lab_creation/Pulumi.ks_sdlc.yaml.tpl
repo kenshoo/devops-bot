@@ -16,4 +16,5 @@ config:
   {% endif %}
   ks:tags:
     Email: {{ email }}
+    User: {{ user_slack_id }}
   registration:krem: {{ is_memsql }}
