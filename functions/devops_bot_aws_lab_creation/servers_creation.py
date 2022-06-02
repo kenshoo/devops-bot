@@ -57,6 +57,7 @@ def run_workflow(jenkins, github_env, pr_utils, _lab_params):
     else:
         master_build_num = jenkins.trigger_jenkins_job(MASTER_JOB, {'ks_id': f'{ks_name}', 'ks_env': 'sdlc'})['number']
     server_creator.validate_master_build(master_build_num)
+    return master_build_num
 
 
 def servers_creation_main(jenkins, github_env, pr_utils, _lab_params):

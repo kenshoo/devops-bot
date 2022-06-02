@@ -31,5 +31,6 @@ intent_handlers = {
   "jiraTicket": "pulumi-lambda-devops-bot-jira-ticket",
   "JenkinsJobIssueAnalysis": "pulumi-lambda-devops-bot-jenkins",
   "LabIssueAnalysis": "pulumi-lambda-devops-bot-lab-issue",
-  "StackOverflowIntent": "pulumi-lambda-devops-bot-stackoverflow"
+  "StackOverflowIntent": "pulumi-lambda-devops-bot-stackoverflow",
+  "KSLABCreationIntent": "pulumi-lambda-devops-bot-aws-lab-creation"
 }
