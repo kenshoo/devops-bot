@@ -29,7 +29,8 @@ def lambda_handler(event, context):
         validation_result = helper.validate_slots(slots)
         if not validation_result['isValid']:
             logger.debug(slots)
-            slack.post_in_slack(slots.get('user_slack_id'), validation_result['message'], _get_slack_block_kits(slots))
+            slack.post_in_slack(slots.get('user_slack_id'), 'Please provide the missing fields',
+                                _get_slack_block_kits(slots))
             return helper.elicit_slot(event, validation_result['violatedSlot'], validation_result['message'])
 
     try:
@@ -86,7 +87,7 @@ def _get_slack_block_kits(slots):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"Hello {(slots.get('user_slack_id'))} to proceed in creating a "
+                        "text": f"Hello {(slots.get('email'))} to proceed in creating a "
                                 f"ticket, please fill out the following survey.\n *Make sure to fill all the fields*:\n"
                     }
                 },
@@ -97,11 +98,36 @@ def _get_slack_block_kits(slots):
                     "type": "input",
                     "element": {
                         "type": "plain_text_input",
+                        "multiline": True,
                         "action_id": "plain_text_input-action"
                     },
                     "label": {
                         "type": "plain_text",
-                        "text": "Ticket title",
+                        "text": "Please describe your issue",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "action_id": "plain_text_input-action"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Which components are relevant? (example: jenkins,microcosm)",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "action_id": "plain_text_input-action"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Which team are you in?",
                         "emoji": True
                     }
                 },
@@ -118,33 +144,25 @@ def _get_slack_block_kits(slots):
                             {
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "Team1",
+                                    "text": "*Build*",
                                     "emoji": True
                                 },
-                                "value": "value-0"
+                                "value": "Build"
                             },
                             {
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "Team2",
+                                    "text": "*Deployment*",
                                     "emoji": True
                                 },
-                                "value": "value-1"
-                            },
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "Team3",
-                                    "emoji": True
-                                },
-                                "value": "value-2"
+                                "value": "Deployment"
                             }
                         ],
                         "action_id": "static_select-action"
                     },
                     "label": {
                         "type": "plain_text",
-                        "text": "Reporting Team (need to create logic to import the list)",
+                        "text": "Support Type",
                         "emoji": True
                     }
                 },
@@ -161,61 +179,42 @@ def _get_slack_block_kits(slots):
                             {
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "*this is plain_text text*",
+                                    "text": "*General guidance*",
                                     "emoji": True
                                 },
-                                "value": "value-0"
-                            }
-                        ],
-                        "action_id": "static_select-action"
-                    },
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Support Type (import options from JIRA/list)",
-                        "emoji": True
-                    }
-                },
-                {
-                    "type": "input",
-                    "element": {
-                        "type": "static_select",
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select an item",
-                            "emoji": True
-                        },
-                        "options": [
-                            {
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": "*Low*",
-                                    "emoji": True
-                                },
-                                "value": "value-0"
+                                "value": "General guidance"
                             },
                             {
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "*Middle*",
+                                    "text": "*Development impaired*",
                                     "emoji": True
                                 },
-                                "value": "value-1"
+                                "value": "Development impaired"
                             },
                             {
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "*High*",
+                                    "text": "*Development blocked*",
                                     "emoji": True
                                 },
-                                "value": "value-2"
+                                "value": "Development blocked"
                             },
                             {
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "*Hotfix*",
+                                    "text": "*System impaired*",
                                     "emoji": True
                                 },
-                                "value": "value-3"
+                                "value": "System impaired"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "*System down*",
+                                    "emoji": True
+                                },
+                                "value": "System down"
                             }
                         ],
                         "action_id": "static_select-action"
@@ -229,17 +228,75 @@ def _get_slack_block_kits(slots):
                 {
                     "type": "input",
                     "element": {
-                        "type": "plain_text_input",
-                        "multiline": True,
-                        "action_id": "plain_text_input-action"
+                        "type": "static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select an item",
+                            "emoji": True
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "*Single person*",
+                                    "emoji": True
+                                },
+                                "value": "Single person"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "*Single Team*",
+                                    "emoji": True
+                                },
+                                "value": "Single Team"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "*Multiple teams*",
+                                    "emoji": True
+                                },
+                                "value": "Multiple teams"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "*All tech*",
+                                    "emoji": True
+                                },
+                                "value": "All tech"
+                            },
+                            {
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "*All Kenshoo*",
+                                    "emoji": True
+                                },
+                                "value": "All Kenshoo"
+                            }
+                        ],
+                        "action_id": "static_select-action"
                     },
                     "label": {
                         "type": "plain_text",
-                        "text": "Description(What did you try, what conclusions you have, any info)",
+                        "text": "What's the impact",
                         "emoji": True
                     }
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Submit",
+                                "emoji": True
+                            },
+                            "value": "click_me_123",
+                            "action_id": "actionId-0"
+                        }
+                    ]
                 }
             ]
-
-
-
