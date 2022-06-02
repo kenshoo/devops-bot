@@ -1,4 +1,5 @@
 import traceback
+from jinja2 import Template
 
 TEMPLATE_PATH = 'functions/devops_bot_aws_lab_creation/Pulumi.ks_sdlc.yaml.tpl'
 MASTER_JOB = 'Build_KS_AWS'
@@ -16,11 +17,9 @@ class ServersCreator(object):
 
     @staticmethod
     def create_stack_text_from_template(params_dict):
-        with open(TEMPLATE_PATH, 'r') as stack_template:
-            stack_text = stack_template.read()
-            for key, value in params_dict.items():
-                stack_text = stack_text.replace(f'{{{{ {key} }}}}', str(value))
-        return stack_text
+        with open('stack.j2', 'r') as stack_template:
+            stack_text = Template(stack_template.read())
+        return stack_text.render(params_dict)
 
     def is_stack_exists_in_master(self):
         return self._github_env_utils.file_exists_in_branch(f'ks/environments/sdlc/Pulumi.sdlc-{self._ks_name}.yaml',
@@ -56,7 +55,7 @@ def run_workflow(jenkins, github_env, pr_utils, _lab_params):
     if not server_creator.is_stack_exists_in_master():
         master_build_num = server_creator.merge_pr(server_creator.create_pr(stack_text))
     else:
-        master_build_num = jenkins.trigger_jenkins_job(MASTER_JOB, {'ks_id': f'{ks_id}', 'ks_env': 'sdlc'})['number']
+        master_build_num = jenkins.trigger_jenkins_job(MASTER_JOB, {'ks_id': f'{ks_name}', 'ks_env': 'sdlc'})['number']
     server_creator.validate_master_build(master_build_num)
 
 
