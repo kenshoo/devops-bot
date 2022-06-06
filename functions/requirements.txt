@@ -61,6 +61,8 @@ jeepney==0.8.0
     #   -c ../functions/requirements.txt
     #   keyring
     #   secretstorage
+jinja2==3.1.2
+    # via -r requirements.in
 jira==3.2.0
     # via
     #   -c ../functions/requirements.txt
@@ -78,6 +80,8 @@ keyring==23.5.1
     # via
     #   -c ../functions/requirements.txt
     #   jira
+markupsafe==2.1.1
+    # via jinja2
 multi-key-dict==2.0.3
     # via
     #   -c ../functions/requirements.txt

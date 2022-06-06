@@ -2,7 +2,7 @@ config:
   general:project-name: devops-bot
   general:owner: _ks-platform@kenshoo.com
   aws:account: lab
-  lambda:name: devops_bot_aws_lab_creation
+  lambda:name: devops-bot-aws-lab-creation
   lambda:type: api_gateway
   lambda:role: pulumi-lambda-service-lambda-template
   lambda:handler: lambda_function.lambda_handler
