@@ -11,4 +11,4 @@ config:
   api:description: api to trigger devops-bot-jenkins lambda
   api:path-suffix: test
   api:hosted-zone: internalk-stg.com
-  api:domain-name: devops-bot-aws-lab-creation.internalk-stg.com
+  api:domain-name: devops-bot-aws-lab-creation-1.internalk-stg.com
