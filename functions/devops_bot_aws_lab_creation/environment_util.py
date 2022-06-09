@@ -14,7 +14,7 @@ class GithubEnvironmentUtil(object):
     def __init__(self, environments, path, repository=None, hierarchy=1):
         self.ENVIRONMENTS = frozenset(environments)
         self.LABELS = [Label(None, None, {"name": env}, None) for env in self.ENVIRONMENTS]
-        self.GITHUB_CRED = 'kenshoo-build2', os.environ.get('KENSHOO_BUILD2', "")
+        self.GITHUB_CRED = 'kenshoo-build2', os.environ.get('GITHUB_TOKEN_LABS_CREATION', "")
         self.path = path
         self.repository = repository
         self.hierarchy = hierarchy
