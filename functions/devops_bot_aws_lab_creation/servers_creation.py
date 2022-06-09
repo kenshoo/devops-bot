@@ -17,7 +17,7 @@ class ServersCreator(object):
 
     @staticmethod
     def create_stack_text_from_template(params_dict):
-        with open('stack.j2', 'r') as stack_template:
+        with open(TEMPLATE_PATH, 'r') as stack_template:
             stack_text = Template(stack_template.read())
         return stack_text.render(params_dict)
 
