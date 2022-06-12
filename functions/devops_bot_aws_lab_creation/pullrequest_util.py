@@ -7,7 +7,7 @@ import backoff
 
 class PullRequestUtils:
     def __init__(self, repo_name, build_result_max_time=360):
-        __conn = Github(os.getenv('KENSHOO_BUILD2'))
+        __conn = Github(os.getenv('GITHUB_TOKEN_LABS_CREATION'))
         self.repo_name = repo_name
         self.repo = __conn.get_repo(f'kenshoo/{self.repo_name}')
         self.side_branch_name = f'{os.getenv("JOB_NAME")}-{os.getenv("BUILD_ID")}-' \
